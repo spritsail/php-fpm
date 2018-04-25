@@ -18,7 +18,7 @@ pipeline:
             docker rm $$CON_NAME
             exit 25;
         fi
-      - REQUEST_METHOD=GET cgi-fcgi -bind -connect $$IP:9000 || docker kill $$CON_NAME && exit 1
+      - REQUEST_METHOD=GET cgi-fcgi -bind -connect $$IP:9000 || ( docker kill $$CON_NAME; exit 1 )
       - docker kill $$CON_NAME
       - docker rm $$CON_NAME
 
