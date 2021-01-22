@@ -5,7 +5,7 @@
 
 # [Spritsail/php-fpm][hub]
 
-A basic php-fpm container, with some dependencies not found in the official image. Used primarily for Organizrr
+A basic php-fpm container, with some dependencies not found in the official image. Used primarily for Organizrr.
 
 [![Layers](https://api.spritsail.io/badge/image/spritsail/php-fpm.svg)][mbdg]
 [![Latest Version](https://api.spritsail.io/badge/version/spritsail/php-fpm.svg)][hub]
