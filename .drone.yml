@@ -1,36 +1,38 @@
-pipeline:
-  build:
-    image: spritsail/docker-build
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    repo: php-dev
+---
+kind: pipeline
+name: default
 
-  test:
-    image: docker
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    commands:
-      - apk add --no-cache fcgi
-      - CON_NAME=$(docker run -d -e SUID=0 php-dev)
-      - sleep 5
-      - IP=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $$CON_NAME)
-      - if [ -z "$IP" ]; then
-            echo "The container exited.. sadpanda";
-            docker inspect --format='{{.State.ExitCode}}' $$CON_NAME;
-            docker rm $$CON_NAME
-            exit 25;
-        fi
-      - REQUEST_METHOD=GET cgi-fcgi -bind -connect $$IP:9000 || ( docker kill $$CON_NAME; exit 1 )
-      - docker kill $$CON_NAME
-      - docker rm $$CON_NAME
+platform:
+  os: linux
+  arch: amd64
 
-  publish:
-    image: spritsail/docker-publish
-    when: { branch: [ master ], event: [ push, tag, deployment ] }
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    secrets: [ docker_username, docker_password, microbadger_token ]
-    from: php-dev
+steps:
+- name: build
+  pull: always
+  image: spritsail/docker-build
+
+- name: test
+  pull: always
+  image: spritsail/docker-test
+  settings:
+    delay: 1
+    exec_pre: apk add --no-cache fcgi
+    exec_post: REQUEST_METHOD=GET cgi-fcgi -bind -connect localhost:9000
+
+- name: publish
+  pull: always
+  image: spritsail/docker-publish
+  settings:
     repo: spritsail/php-fpm
+    login: {from_secret: docker_login}
+  when:
+    branch:
+    - master
+    event:
+    - push
 
-  notify:
-    image: spritsail/notify
-    when: { status: [ success, failure ] }
-    secrets: [ webhook_url, notify_token ]
+---
+kind: signature
+hmac: 92ac2741604c4e2af49209f49d8e5fd1583a19155a8a85ea99bc57dd698df293
+
+...
