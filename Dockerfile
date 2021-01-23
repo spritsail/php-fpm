@@ -1,4 +1,4 @@
-FROM spritsail/alpine:3.12
+FROM spritsail/alpine:3.13
 
 LABEL maintainer="Spritsail <php@spritsail.io>" \
       org.label-schema.vendor="Spritsail" \
